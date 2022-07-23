@@ -1,0 +1,104 @@
+---
+title: "R CASE STUDY 3 (Visualization)"
+author: "Salman"
+date: "30/03/2022"
+output: html_document
+---
+
+```{r}
+SalesData <- read.csv("SalesData.csv")
+```
+
+Question 1.
+
+```{r}
+library(dplyr)
+Total_Sales <- SalesData %>% group_by(Region) %>% summarize(TotalSales2015 = sum(Sales2015), TotalSales2016 = sum(Sales2016))
+
+library(tidyr)
+Comparison_of_Sales <- gather(Total_Sales, key = Year, value = Sales, -Region)
+Comparison_of_Sales$Sales <- ceiling(Comparison_of_Sales$Sales)
+
+library(ggplot2)
+ggplot(Comparison_of_Sales, aes(x = Region, y = Sales, fill = Year, label = Sales)) + geom_bar(stat = "identity", position = "dodge") + geom_text(size = 5)
+```
+
+Question 2.
+
+```{r}
+TotalSales2016 <- SalesData %>% group_by(Region) %>% summarize(TotalSales2016 = sum(Sales2016))
+TotalSales2016$Percentage <- round(TotalSales2016$TotalSales2016/sum(TotalSales2016$TotalSales2016)*100,1)
+
+pie(TotalSales2016$TotalSales2016, labels = TotalSales2016$Region, radius = 1, border = "black", main = "Pie Chart of Sales 2016")
+
+pie(TotalSales2016$TotalSales2016, labels = paste(TotalSales2016$Percentage, "%", " ", ":", TotalSales2016$Region), col = c("red", "green", "blue"), radius = 1, border = "black", main = "2D Pie Chart of Sales 2016")
+
+library(plotrix)
+pie3D(TotalSales2016$TotalSales2016, labels = paste(TotalSales2016$Percentage, "%", " ", ":", TotalSales2016$Region), explode = 0.1, col = c("red", "green", "blue")) + title("3D Pie Chart of Sales 2016")
+```
+
+Question 3.
+
+```{r}
+TotalSales <- SalesData %>% group_by(Region, Tier) %>% summarize(TotalSales2015 = sum(Sales2015), TotalSales2016 = sum(Sales2016))
+
+SalesComparison <- gather(TotalSales, key = Year, value = Sales, -c(Region, Tier))
+
+ggplot(SalesComparison, aes(x = Tier, y = Sales, fill = Year)) + geom_col(position = "dodge") + facet_wrap(~Region)
+```
+
+Question 4.
+
+```{r}
+East_Sales <- SalesData %>% group_by(State) %>% filter(Region == "East") %>% summarize(TotalSales2015 = sum(Sales2015), TotalSales2016 = sum(Sales2016))
+
+East_Sales_Comparison <- gather(East_Sales, key = Year, value = Sales, -State)
+
+ggplot(East_Sales_Comparison, aes(x = State, y = Sales, fill = Year)) + geom_col(position = "dodge")
+```
+
+In East region, NY registered a decline in sales in 2016
+
+Question 5.
+
+```{r}
+HighTier_Units <- SalesData %>% group_by(Division) %>% filter(Tier == "High") %>% summarize(TotalUnits2015 = sum(Units2015), TotalUnits2016 = sum(Units2016))
+
+HighTier_Units_Comparison <- gather(HighTier_Units, key = Year, value = Units, -Division)
+
+ggplot(HighTier_Units_Comparison, aes(x = Division, y = Units, fill = Year)) + geom_col(position = "dodge") + theme(axis.text.x = element_text(angle = -50, hjust = 0))
+```
+
+Question 6.
+
+```{r}
+SalesData <- SalesData %>% mutate(Qtr = if_else(Month == "Jan" | Month == "Feb" | Month == "Mar", "Q1",
+                                        if_else(Month == "Apr" | Month == "May" | Month == "Jun", "Q2",
+                                        if_else(Month == "Jul" | Month == "Aug" | Month == "Sep", "Q3", "Q4"))))
+```
+
+Question 7.
+
+```{r}
+Qtr_Wise_Sales <- SalesData %>% group_by(Qtr) %>% summarize(TotalSales2015 = sum(Sales2015), TotalSales2016 = sum(Sales2016))
+
+Qtr_Wise_Sales_Comparison <- gather(Qtr_Wise_Sales, key = Year, value = Sales, -Qtr)
+
+ggplot(Qtr_Wise_Sales_Comparison, aes(x = Qtr, y = Sales, fill = Year)) + geom_bar(stat = "identity", position = "dodge")
+```
+
+Question 8.
+
+```{r}
+Q1_Sales2015 <- SalesData %>% group_by(Tier) %>% filter(Qtr == "Q1") %>% summarize(TotalSales2015 = sum(Sales2015))
+pie(Q1_Sales2015$TotalSales2015, labels = Q1_Sales2015$Tier, radius = 1, border = "black", main = "Qtr1")
+
+Q2_Sales2015 <- SalesData %>% group_by(Tier) %>% filter(Qtr == "Q2") %>% summarize(TotalSales2015 = sum(Sales2015))
+pie(Q2_Sales2015$TotalSales2015, labels = Q2_Sales2015$Tier, radius = 1, border = "black", main = "Qtr2")
+
+Q3_Sales2015 <- SalesData %>% group_by(Tier) %>% filter(Qtr == "Q3") %>% summarize(TotalSales2015 = sum(Sales2015))
+pie(Q3_Sales2015$TotalSales2015, labels = Q3_Sales2015$Tier, radius = 1, border = "black", main = "Qtr3")
+
+Q4_Sales2015 <- SalesData %>% group_by(Tier) %>% filter(Qtr == "Q4") %>% summarize(TotalSales2015 = sum(Sales2015))
+pie(Q4_Sales2015$TotalSales2015, labels = Q4_Sales2015$Tier, radius = 1, border = "black", main = "Qtr4")
+```
